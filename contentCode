@@ -1,0 +1,62 @@
+package com.radha.biharanand.newsscreen
+
+import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.os.Bundle
+import android.util.Log
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.ProgressBar
+import androidx.activity.addCallback
+import com.radha.biharanand.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+class NewsPreView : Fragment(R.layout.fragment_news_pre_view) {
+
+    private lateinit var engineersNews:WebView
+    private lateinit var newsProgress:ProgressBar
+
+    @SuppressLint("SetJavaScriptEnabled")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        engineersNews = view.findViewById(R.id.engineersNews)
+        newsProgress = view.findViewById(R.id.newsProgress)
+        CoroutineScope(Dispatchers.Main.immediate).launch {
+            engineersNews.loadUrl("https://news.google.com/search?q=bihar%20engineering&hl=hi&gl=IN&ceid=IN%3Ahi")
+        }
+        engineersNews.settings.javaScriptEnabled = true
+        engineersNews.webViewClient = object :WebViewClient()
+        {
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                newsProgress.visibility = View.VISIBLE
+                super.onPageStarted(view, url, favicon)
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                newsProgress.visibility = View.GONE
+                super.onPageFinished(view, url)
+            }
+        }
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+       val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+                    if (engineersNews.canGoBack())
+                   {
+                       engineersNews.goBack()
+                   }
+                  else {
+                        remove()
+                        requireActivity().onBackPressed()
+                    }
+        }
+    }
+
+}
